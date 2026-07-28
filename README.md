@@ -1,19 +1,105 @@
-<div dir="rtl">
+<div align="center">
 
-# گزارش — سامانه گزارش‌گیری سازمانی
+<img src="frontend/public/og.png" alt="Gozaresh — Enterprise Reporting System | سامانه گزارش‌گیری سازمانی" width="820">
 
-سامانه‌ی مرجع (reference implementation) برای توسعه و راه‌اندازی سامانه‌های گزارش‌گیری در سازمان‌ها؛ با محاسبات دقیق چندارزی، گردش‌کار تأیید چندمرحله‌ای همراه با امضای دیجیتال، داشبورد آنی، اتصال به سامانه‌های مالیاتی و بانکی، و مسیر حسابرسی تغییرناپذیر.
+# Gozaresh — Enterprise Reporting System<br><sub>گزارش — سامانه گزارش‌گیری سازمانی</sub>
 
-</div>
+**Multi-currency financial reporting with 16-decimal precision, a digitally signed
+three-stage approval workflow, real-time dashboards, tax & bank integrations,
+and a tamper-evident audit trail.**
+
+سامانه‌ی مرجع برای توسعه و راه‌اندازی سامانه‌های گزارش‌گیری در سازمان‌ها — با محاسبات
+دقیق چندارزی، گردش‌کار تأیید چندمرحله‌ای همراه با امضای دیجیتال، داشبورد آنی،
+اتصال به سامانه مودیان و درگاه بانکی، و مسیر حسابرسی تغییرناپذیر.
+
+[**🇬🇧 English**](#english) · [**🇮🇷 فارسی**](#persian) · [**🌐 Live demo**](https://mamadiezad.github.io/gozaresh-reporting-system/) · [**📘 API docs**](docs/API.md) · [**🔐 Security**](docs/SECURITY.md)
 
 [![CI](https://github.com/mamadiezad/gozaresh-reporting-system/actions/workflows/ci.yml/badge.svg)](https://github.com/mamadiezad/gozaresh-reporting-system/actions/workflows/ci.yml)
-![Python](https://img.shields.io/badge/python-3.13-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.140-009688)
-![Next.js](https://img.shields.io/badge/Next.js-15.5-black)
+[![Pages](https://github.com/mamadiezad/gozaresh-reporting-system/actions/workflows/pages.yml/badge.svg)](https://mamadiezad.github.io/gozaresh-reporting-system/)
+![Python](https://img.shields.io/badge/python-3.13-blue?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.140-009688?logo=fastapi&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-15.5-black?logo=nextdotjs)
 ![Tests](https://img.shields.io/badge/tests-115%20passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-84%25-green)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 [![Telegram](https://img.shields.io/badge/Telegram-%40llllxyz-2CA5E0?logo=telegram&logoColor=white)](https://t.me/llllxyz)
+
+</div>
+
+---
+
+<a id="english"></a>
+
+## 🇬🇧 English
+
+### What is this?
+
+An open-source, production-grade **enterprise reporting system**. It replaces
+spreadsheet-and-email approval chains with a single auditable flow: every financial
+report gets a unique reference, an exactly-computed instalment schedule, a
+cryptographically signed approval chain, and an immutable change history.
+
+Built as a **reference implementation** — the kind of codebase you can read to see how
+financial correctness, multi-stage authorisation and audit integrity are actually
+enforced, not just described.
+
+### Feature overview
+
+| # | Capability | What it guarantees |
+|---|---|---|
+| 1 | **Multi-currency Decimal calculations** | Compound interest and amortisation in pure `Decimal` to 16 places, FX from a central-bank feed with fallback, result in **under 50 ms** (measured p99: **1.7 ms**) |
+| 2 | **Three-stage approval workflow** | Finance manager → inspector → CEO, strictly ordered, each decision signed with **RSA-2048/PSS** over the report's content hash |
+| 3 | **Real-time dashboard & alerts** | Interactive charts, overdue-instalment detection, MAD-based anomaly detection, delivered over email, SMS and **WebSocket** |
+| 4 | **Tax, bank & accounting integrations** | Signed invoices to the tax authority, bank settlement confirmations, double-entry vouchers as REST JSON or standard XML — all **idempotent** with exponential backoff |
+| 5 | **Layered security & audit trail** | Argon2id, JWT, RBAC, field-level encryption, and a **hash-chained** audit log that pinpoints the exact tampered record |
+
+### Quick start
+
+```bash
+git clone https://github.com/mamadiezad/gozaresh-reporting-system.git
+cd gozaresh-reporting-system
+docker compose up --build
+
+# Dashboard  → http://localhost:3000
+# API docs   → http://localhost:8000/docs
+```
+
+Demo accounts (password `DemoPass!2024`): `alice` (requester), `bob` (finance manager),
+`carol` (inspector), `dave` (CEO), `erin` (auditor), `root` (admin).
+
+### Why the engineering details matter
+
+Three real defects were found and fixed during development — each is documented with a
+regression test, because they are the kind of bug that silently corrupts financial data:
+
+- **SQLite maps `NUMERIC` to a C double**, so `12500000000.1234567890123456` came back as
+  `…4569549560547`. That broke both the precision guarantee *and* every digital signature.
+  Solved with a [custom `Money` column type](backend/app/models/types.py).
+- **`quantize()` under the default 28-digit context** raised `InvalidOperation` for any
+  rial amount above ~12 digits — entirely normal for IRR.
+- **HTTP exceptions rolled back the session**, discarding failed-login audit entries and
+  the account-lockout counter. A genuine security hole.
+
+Full write-up in [Technical decisions](#تصمیمات-فنی-مهم) and [`docs/SECURITY.md`](docs/SECURITY.md).
+
+### Tech stack
+
+`FastAPI` · `Python 3.13` · `SQLAlchemy 2.0` · `PostgreSQL` · `Pydantic v2` ·
+`Next.js 15` · `React 19` · `TypeScript` · `WebSocket` · `Docker` · `Argon2id` · `RSA-PSS` · `JWT`
+
+**115 tests · 84% coverage · CI runs lint, tests and an end-to-end smoke suite.**
+
+📘 [Full API reference](docs/API.md) · 🔐 [Security model](docs/SECURITY.md) · 🤝 [Contributing](CONTRIBUTING.md)
+
+---
+
+<div dir="rtl">
+
+<a id="persian"></a>
+
+## 🇮🇷 فارسی
+
+</div>
 
 ---
 

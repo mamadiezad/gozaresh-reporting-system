@@ -455,18 +455,9 @@ ALLOWED_ORIGINS=https://reports.your-org.ir
 1. مقدار `NEXT_PUBLIC_SITE_URL` را در `.env.local` روی دامنه واقعی تنظیم کنید — تگ canonical، Open Graph، sitemap و JSON-LD همگی از آن مشتق می‌شوند.
 2. دامنه را در [Google Search Console](https://search.google.com/search-console) ثبت و `sitemap.xml` را معرفی کنید.
 3. تصویر Open Graph را با [ابزار اعتبارسنجی](https://cards-dev.twitter.com/validator) بررسی کنید.
-4. اگر متن صفحه فرود را تغییر دادید، تصویر OG را دوباره بسازید:
-
-</div>
-
-```bash
-python scripts/generate-og-image.py --font-dir /path/to/vazirmatn/ttf
-```
-
-<div dir="rtl">
-
-> تصویر OG با Pillow و کتابخانه raqm ساخته می‌شود، نه با `next/og`. موتور Satori در
-> `next/og` قابلیت شکل‌دهی متن عربی/فارسی ندارد و حروف را جدا و برعکس رندر می‌کند.
+4. تصویر Open Graph در `frontend/public/og.png` قرار دارد. اگر متن صفحه فرود را تغییر دادید،
+   آن را نیز به‌روزرسانی کنید — این تصویر با Pillow و کتابخانه raqm ساخته شده، نه با `next/og`،
+   چون موتور Satori قابلیت شکل‌دهی متن فارسی ندارد و حروف را جدا و برعکس رندر می‌کند.
 
 ---
 

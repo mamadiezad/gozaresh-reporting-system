@@ -8,6 +8,29 @@ export const API_BASE =
 export const WS_BASE =
   process.env.NEXT_PUBLIC_WS_BASE ?? "ws://localhost:8000/api/v1";
 
+/**
+ * A page served over HTTPS cannot call an http:// API — the browser blocks it
+ * as mixed content and `fetch` rejects with an opaque "Failed to fetch".
+ * Detect that specific misconfiguration so the user gets a real explanation.
+ */
+function mixedContentProblem(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.location.protocol === "https:" && API_BASE.startsWith("http://");
+}
+
+function unreachableMessage(): string {
+  if (mixedContentProblem()) {
+    return (
+      `این صفحه روی HTTPS اجرا می‌شود اما آدرس API روی HTTP است (${API_BASE}). ` +
+      "مرورگر چنین درخواستی را مسدود می‌کند. مقدار NEXT_PUBLIC_API_BASE را روی یک آدرس https:// تنظیم کنید."
+    );
+  }
+  return (
+    `اتصال به سرور برقرار نشد (${API_BASE}). ` +
+    "مطمئن شوید بک‌اند در حال اجراست: docker compose up — یا uvicorn app.main:app --reload"
+  );
+}
+
 const ACCESS_KEY = "gozaresh.access";
 const REFRESH_KEY = "gozaresh.refresh";
 
@@ -165,7 +188,14 @@ async function request<T>(
   const access = tokens.access;
   if (access) headers.set("Authorization", `Bearer ${access}`);
 
-  const response = await fetch(`${API_BASE}${path}`, { ...init, headers });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, { ...init, headers });
+  } catch {
+    // fetch() only rejects on network/CORS/mixed-content failures, never on
+    // HTTP error statuses — so this is always a connectivity problem.
+    throw new ApiError(unreachableMessage(), 0);
+  }
 
   if (response.status === 401 && retry && tokens.refresh) {
     const refreshed = await refreshSession();

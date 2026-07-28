@@ -1,157 +1,183 @@
-"use client";
+import type { Metadata } from "next";
+import Link from "next/link";
 
-import { useCallback, useEffect, useState } from "react";
+import Footer from "@/components/Footer";
+import { FAQ, SITE } from "@/lib/seo";
 
-import AuditTrail from "@/components/AuditTrail";
-import Calculator from "@/components/Calculator";
-import Dashboard from "@/components/Dashboard";
-import Login from "@/components/Login";
-import Reports from "@/components/Reports";
-import { api, connectLive, tokens, type LiveEvent, type User } from "@/lib/api";
+export const metadata: Metadata = {
+  title: SITE.title,
+  description: SITE.description,
+  alternates: { canonical: "/" },
+};
 
-type Tab = "dashboard" | "calculator" | "reports" | "audit";
-
-const TABS: Array<{ id: Tab; label: string }> = [
-  { id: "dashboard", label: "داشبورد" },
-  { id: "calculator", label: "محاسبه‌گر" },
-  { id: "reports", label: "گزارش‌ها و گردش‌کار" },
-  { id: "audit", label: "مسیر حسابرسی" },
+const FEATURES = [
+  {
+    id: "calculations",
+    title: "محاسبات دقیق و آنی با پشتیبانی از ارزهای چندگانه",
+    body:
+      "نرخ تسعیر از منابع معتبر (بانک مرکزی یا API صرافی‌ها) دریافت می‌شود، سود مرکب و اقساط با دقت " +
+      "Decimal تا ۱۶ رقم اعشار محاسبه می‌گردد و مبلغ نهایی در کمتر از ۵۰ میلی‌ثانیه نمایش داده می‌شود.",
+    points: [
+      "هیچ‌جای مسیر پولی از float استفاده نمی‌شود",
+      "زنجیره نرخ: بانک مرکزی ← API صرافی ← آخرین نرخ معتبر",
+      "p99 اندازه‌گیری‌شده: ۱٫۷ میلی‌ثانیه",
+    ],
+  },
+  {
+    id: "workflow",
+    title: "گردش‌کار تأیید چندمرحله‌ای",
+    body:
+      "هر درخواست پس از ثبت، به‌صورت خودکار برای تأیید مدیر مالی، سپس بازرس و در نهایت مدیرعامل ارسال " +
+      "می‌شود و در هر مرحله لاگ کامل و امضای دیجیتال ثبت می‌گردد.",
+    points: [
+      "ترتیب مراحل سخت‌گیرانه اعمال می‌شود",
+      "امضای RSA-2048 روی هش محتوای گزارش",
+      "تغییر مبلغ پس از تأیید، امضاها را باطل می‌کند",
+    ],
+  },
+  {
+    id: "dashboard",
+    title: "داشبورد هوشمند و هشدارهای آنی",
+    body:
+      "نمایش وضعیت گزارش‌ها به‌صورت لحظه‌ای با نمودارهای تعاملی، هشدار برای اقساط معوق، تشخیص " +
+      "تراکنش‌های خارج از بازه مجاز و ارسال نوتیفیکیشن از طریق ایمیل، پیامک و WebSocket.",
+    points: [
+      "تشخیص ناهنجاری آماری مبتنی بر MAD",
+      "هشدار گردش‌کارهای متوقف‌شده",
+      "هشدارهای تکراری حذف می‌شوند",
+    ],
+  },
+  {
+    id: "integrations",
+    title: "اتصال یکپارچه به سامانه‌های مالیاتی و بانکی",
+    body:
+      "ارسال خودکار گزارش‌ها به سامانه مودیان، دریافت تأییدیه از درگاه بانک برای تسویه‌ها و تبادل داده " +
+      "با نرم‌افزارهای حسابداری از طریق REST API یا فایل‌های XML/JSON استاندارد.",
+    points: [
+      "همه فراخوانی‌ها idempotent هستند",
+      "اعتبارسنجی IBAN با الگوریتم mod-97",
+      "تلاش مجدد با backoff نمایی",
+    ],
+  },
+  {
+    id: "security",
+    title: "امنیت لایه‌ای و حسابرسی کامل",
+    body:
+      "احراز هویت JWT، رمزنگاری Argon2id، کنترل دسترسی نقش‌محور، رمزگذاری سطح فیلد برای اطلاعات هویتی " +
+      "و مسیر حسابرسی زنجیره‌ای که هرگونه دستکاری در تاریخچه را آشکار می‌کند.",
+    points: [
+      "زنجیره هش: H(هش قبلی ‖ محتوا)",
+      "شماره دقیق رکورد دستکاری‌شده گزارش می‌شود",
+      "پاک‌سازی خودکار گذرواژه و اطلاعات حساس از لاگ",
+    ],
+  },
 ];
 
-interface Toast {
-  id: number;
-  text: string;
-  severity: string;
-}
+const STATS = [
+  { value: "‎<۵۰ms", label: "زمان پاسخ محاسبات" },
+  { value: "۱۶", label: "رقم اعشار دقت" },
+  { value: "۵۱", label: "endpoint آماده" },
+  { value: "۱۱۵", label: "تست خودکار" },
+];
 
-export default function Home() {
-  const [user, setUser] = useState<User | null>(null);
-  const [checking, setChecking] = useState(true);
-  const [tab, setTab] = useState<Tab>("dashboard");
-  const [live, setLive] = useState(false);
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const [refreshToken, setRefreshToken] = useState(0);
-
-  // restore an existing session on first paint
-  useEffect(() => {
-    if (!tokens.access) {
-      setChecking(false);
-      return;
-    }
-    api
-      .me()
-      .then(setUser)
-      .catch(() => tokens.clear())
-      .finally(() => setChecking(false));
-  }, []);
-
-  const pushToast = useCallback((text: string, severity = "info") => {
-    const id = Date.now() + Math.random();
-    setToasts((current) => [...current.slice(-4), { id, text, severity }]);
-    setTimeout(() => setToasts((current) => current.filter((t) => t.id !== id)), 7000);
-  }, []);
-
-  // live channel
-  useEffect(() => {
-    if (!user) return;
-    setLive(true);
-
-    const disconnect = connectLive((event: LiveEvent) => {
-      const data = event.data as Record<string, string>;
-      switch (event.event) {
-        case "alert.raised":
-          pushToast(`🔔 ${data.title}`, String(data.severity ?? "warning"));
-          setRefreshToken((n) => n + 1);
-          break;
-        case "workflow.updated":
-          pushToast(
-            `${data.reference}: ${data.decision === "approved" ? "تأیید" : "رد"} در مرحله ${data.stage}`,
-          );
-          setRefreshToken((n) => n + 1);
-          break;
-        case "workflow.pending":
-          pushToast(`⏳ ${data.reference} در انتظار ${data.assignee_role}`);
-          setRefreshToken((n) => n + 1);
-          break;
-        case "workflow.completed":
-          pushToast(`✅ ${data.reference}: ${data.status}`);
-          setRefreshToken((n) => n + 1);
-          break;
-        case "report.created":
-          pushToast(`📄 گزارش جدید: ${data.reference}`);
-          setRefreshToken((n) => n + 1);
-          break;
-        case "installment.paid":
-          pushToast(`💰 قسط ${data.number} از ${data.reference} پرداخت شد`);
-          setRefreshToken((n) => n + 1);
-          break;
-        default:
-          break;
-      }
-    });
-
-    return () => {
-      disconnect();
-      setLive(false);
-    };
-  }, [user, pushToast]);
-
-  if (checking) return <div className="center muted">در حال بررسی نشست…</div>;
-  if (!user) return <Login onSuccess={setUser} />;
-
+export default function LandingPage() {
   return (
-    <div className="app">
-      <aside className="sidebar">
-        <div className="brand">
-          گزارش
-          <small>سامانه گزارش‌گیری سازمانی</small>
+    <div className="landing">
+      <header className="landing-hero">
+        <p className="landing-eyebrow">متن‌باز · MIT · آماده استقرار با Docker</p>
+
+        <h1>سامانه گزارش‌گیری سازمانی</h1>
+
+        <p className="landing-lede">
+          راهکار کامل توسعه و راه‌اندازی سامانه‌های گزارش‌گیری در سازمان‌ها: محاسبات مالی چندارزی با
+          دقت Decimal، گردش‌کار تأیید چندمرحله‌ای با امضای دیجیتال، داشبورد آنی و مسیر حسابرسی
+          تغییرناپذیر.
+        </p>
+
+        <div className="landing-cta">
+          <Link className="btn" href="/app">
+            ورود به داشبورد
+          </Link>
+          <a className="btn ghost" href={SITE.repo} target="_blank" rel="noopener noreferrer">
+            مشاهده سورس‌کد
+          </a>
         </div>
 
-        <nav className="nav">
-          {TABS.map((item) => (
-            <button key={item.id} data-active={tab === item.id} onClick={() => setTab(item.id)}>
-              {item.label}
-            </button>
+        <dl className="landing-stats">
+          {STATS.map((stat) => (
+            <div key={stat.label}>
+              <dt>{stat.label}</dt>
+              <dd>{stat.value}</dd>
+            </div>
           ))}
-        </nav>
+        </dl>
+      </header>
 
-        <div style={{ marginTop: 32, fontSize: "0.8rem" }} className="muted">
-          <div>{user.full_name || user.username}</div>
-          <div style={{ fontSize: "0.75rem" }}>نقش: {user.role}</div>
-          <button
-            className="btn ghost"
-            style={{ marginTop: 10, width: "100%", fontSize: "0.8rem" }}
-            onClick={() => {
-              api.logout();
-              setUser(null);
-            }}
-          >
-            خروج
-          </button>
-        </div>
-      </aside>
+      <main>
+        <section aria-labelledby="features-heading" className="landing-section">
+          <h2 id="features-heading">قابلیت‌های سامانه</h2>
 
-      <main className="main">
-        <header className="topbar">
-          <h1>{TABS.find((t) => t.id === tab)?.label}</h1>
-          <span className="live-dot" data-off={!live}>
-            {live ? "اتصال زنده برقرار است" : "بدون اتصال زنده"}
-          </span>
-        </header>
+          <div className="landing-features">
+            {FEATURES.map((feature, index) => (
+              <article key={feature.id} id={feature.id}>
+                <span className="landing-feature-num" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <h3>{feature.title}</h3>
+                <p>{feature.body}</p>
+                <ul>
+                  {feature.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </section>
 
-        {tab === "dashboard" && <Dashboard live={live} refreshToken={refreshToken} />}
-        {tab === "calculator" && <Calculator />}
-        {tab === "reports" && <Reports user={user} refreshToken={refreshToken} />}
-        {tab === "audit" && <AuditTrail refreshToken={refreshToken} />}
+        <section aria-labelledby="stack-heading" className="landing-section">
+          <h2 id="stack-heading">پشته فناوری</h2>
+          <p className="landing-section-lede">
+            بک‌اند با FastAPI و پایتون ۳٫۱۳، فرانت‌اند با Next.js 15 و React 19، پایگاه‌داده
+            PostgreSQL برای محیط عملیاتی، و استقرار با Docker Compose.
+          </p>
+          <ul className="landing-chips">
+            {[
+              "FastAPI",
+              "Python 3.13",
+              "SQLAlchemy 2.0",
+              "PostgreSQL",
+              "Next.js 15",
+              "React 19",
+              "TypeScript",
+              "WebSocket",
+              "Docker",
+              "Argon2id",
+              "RSA-PSS",
+              "JWT",
+            ].map((chip) => (
+              <li key={chip}>{chip}</li>
+            ))}
+          </ul>
+        </section>
+
+        <section aria-labelledby="faq-heading" className="landing-section">
+          <h2 id="faq-heading">پرسش‌های متداول</h2>
+
+          <div className="landing-faq">
+            {FAQ.map((item) => (
+              <details key={item.question}>
+                <summary>
+                  <h3>{item.question}</h3>
+                </summary>
+                <p>{item.answer}</p>
+              </details>
+            ))}
+          </div>
+        </section>
       </main>
 
-      <div className="toast-stack">
-        {toasts.map((toast) => (
-          <div key={toast.id} className="toast" data-severity={toast.severity}>
-            {toast.text}
-          </div>
-        ))}
-      </div>
+      <Footer />
     </div>
   );
 }

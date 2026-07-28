@@ -6,13 +6,14 @@
 
 </div>
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/mamadiezad/gozaresh-reporting-system/actions/workflows/ci.yml/badge.svg)](https://github.com/mamadiezad/gozaresh-reporting-system/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.13-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.140-009688)
 ![Next.js](https://img.shields.io/badge/Next.js-15.5-black)
 ![Tests](https://img.shields.io/badge/tests-115%20passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-84%25-green)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
+[![Telegram](https://img.shields.io/badge/Telegram-%40llllxyz-2CA5E0?logo=telegram&logoColor=white)](https://t.me/llllxyz)
 
 ---
 
@@ -25,6 +26,8 @@
 - [تصمیمات فنی مهم](#تصمیمات-فنی-مهم)
 - [تست‌ها](#تستها)
 - [استقرار در محیط عملیاتی](#استقرار-در-محیط-عملیاتی)
+- [بهینه‌سازی موتور جستجو](#بهینهسازی-موتور-جستجو-seo)
+- [توسعه‌دهنده](#توسعهدهنده)
 
 ---
 
@@ -108,7 +111,7 @@
 </div>
 
 ```bash
-git clone https://github.com/OWNER/REPO.git gozaresh
+git clone https://github.com/mamadiezad/gozaresh-reporting-system.git gozaresh
 cd gozaresh
 docker compose up --build
 
@@ -135,7 +138,7 @@ uvicorn app.main:app --reload            # http://localhost:8000/docs
 # ---------- فرانت‌اند (ترمینال دوم) ----------
 cd frontend
 npm install
-cp .env.example .env.local
+cp .env.example .env.local               # NEXT_PUBLIC_SITE_URL را تنظیم کنید
 npm run dev                              # http://localhost:3000
 ```
 
@@ -185,10 +188,18 @@ gozaresh/
 │   ├── tests/                 # ۱۱۵ تست (پوشش ۸۴٪)
 │   └── scripts/seed.py
 ├── frontend/                  # Next.js 15 + React 19 (RTL فارسی)
+│   ├── public/og.png          # تصویر Open Graph (متن فارسی شکل‌دهی‌شده)
 │   └── src/
-│       ├── app/               # صفحات و استایل
-│       ├── components/        # داشبورد، محاسبه‌گر، گردش‌کار، حسابرسی
-│       └── lib/api.ts         # کلاینت تایپ‌شده + WebSocket
+│       ├── app/
+│       │   ├── page.tsx       # صفحه فرود — استاتیک و بهینه برای SEO
+│       │   ├── app/page.tsx   # داشبورد (پشت احراز هویت، noindex)
+│       │   ├── sitemap.ts     # نقشه سایت خودکار
+│       │   ├── robots.ts      # قوانین خزش
+│       │   └── manifest.ts    # PWA manifest
+│       ├── components/        # داشبورد، محاسبه‌گر، گردش‌کار، حسابرسی، پاورقی
+│       └── lib/
+│           ├── api.ts         # کلاینت تایپ‌شده + WebSocket
+│           └── seo.ts         # متادیتا، کلیدواژه‌ها و JSON-LD
 ├── scripts/smoke-test.sh      # ۲۴ بررسی end-to-end
 ├── docs/                      # مستندات API و مدل امنیتی
 └── .github/workflows/ci.yml
@@ -329,6 +340,53 @@ INTEGRATIONS_SANDBOX=false
 NOTIFICATIONS_DRY_RUN=false
 ALLOWED_ORIGINS=https://reports.your-org.ir
 ```
+
+<div dir="rtl">
+
+---
+
+## بهینه‌سازی موتور جستجو (SEO)
+
+صفحه‌ی فرود پروژه به‌صورت **استاتیک** رندر می‌شود (۳٫۵ کیلوبایت) و کاملاً برای موتورهای جستجو قابل خزش است:
+
+| مورد | پیاده‌سازی |
+|---|---|
+| متادیتا | عنوان، توضیحات و کلیدواژه‌های فارسی و انگلیسی از `src/lib/seo.ts` |
+| داده ساختاریافته | JSON-LD شامل `SoftwareApplication`، `Person`، `WebSite` و `FAQPage` |
+| نقشه سایت | `/sitemap.xml` تولید خودکار |
+| robots | `/robots.txt` — داشبورد (`/app`) از ایندکس خارج است تا امتیاز صفحه اصلی رقیق نشود |
+| Open Graph | تصویر ۱۲۰۰×۶۳۰ با شکل‌دهی صحیح متن فارسی |
+| ساختار محتوا | یک `h1`، سرفصل‌های منظم `h2`/`h3`، و بخش پرسش‌های متداول در HTML |
+| زبان و جهت | `lang="fa"` و `dir="rtl"` |
+| PWA | `manifest.webmanifest` و آیکون SVG |
+
+**پیش از انتشار عمومی:**
+
+1. مقدار `NEXT_PUBLIC_SITE_URL` را در `.env.local` روی دامنه واقعی تنظیم کنید — تگ canonical، Open Graph، sitemap و JSON-LD همگی از آن مشتق می‌شوند.
+2. دامنه را در [Google Search Console](https://search.google.com/search-console) ثبت و `sitemap.xml` را معرفی کنید.
+3. تصویر Open Graph را با [ابزار اعتبارسنجی](https://cards-dev.twitter.com/validator) بررسی کنید.
+4. اگر متن صفحه فرود را تغییر دادید، تصویر OG را دوباره بسازید:
+
+</div>
+
+```bash
+python scripts/generate-og-image.py --font-dir /path/to/vazirmatn/ttf
+```
+
+<div dir="rtl">
+
+> تصویر OG با Pillow و کتابخانه raqm ساخته می‌شود، نه با `next/og`. موتور Satori در
+> `next/og` قابلیت شکل‌دهی متن عربی/فارسی ندارد و حروف را جدا و برعکس رندر می‌کند.
+
+---
+
+## توسعه‌دهنده
+
+ساخته‌شده با ❤️ توسط **[Mohammad](https://t.me/llllxyz)** — تلگرام: [@llllxyz](https://t.me/llllxyz)
+
+اگر این پروژه برایتان مفید بود، یک ⭐ روی گیت‌هاب دلگرم‌کننده است.
+
+</div>
 
 <div dir="rtl">
 

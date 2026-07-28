@@ -94,6 +94,12 @@ export function absoluteUrl(path = ""): string {
   return `${SITE.url}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+/** Canonical form for the static export, which serves every route with a trailing slash. */
+export function trailingSlashUrl(path = "/"): string {
+  const url = absoluteUrl(path);
+  return url.endsWith("/") ? url : `${url}/`;
+}
+
 /** JSON-LD graph: software product + author + org + FAQ, all cross-linked by @id. */
 export function structuredData() {
   return {

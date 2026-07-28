@@ -12,7 +12,7 @@ and a tamper-evident audit trail.**
 دقیق چندارزی، گردش‌کار تأیید چندمرحله‌ای همراه با امضای دیجیتال، داشبورد آنی،
 اتصال به سامانه مودیان و درگاه بانکی، و مسیر حسابرسی تغییرناپذیر.
 
-[**🇬🇧 English**](#english) · [**🇮🇷 فارسی**](#persian) · [**🌐 Live demo**](https://mamadiezad.github.io/gozaresh-reporting-system/) · [**📘 API docs**](docs/API.md) · [**🔐 Security**](docs/SECURITY.md)
+[**🇬🇧 English**](#english) · [**🇮🇷 فارسی**](#persian) · [**🌐 Project site**](https://mamadiezad.github.io/gozaresh-reporting-system/) · [**📘 API docs**](docs/API.md) · [**🔐 Security**](docs/SECURITY.md)
 
 [![CI](https://github.com/mamadiezad/gozaresh-reporting-system/actions/workflows/ci.yml/badge.svg)](https://github.com/mamadiezad/gozaresh-reporting-system/actions/workflows/ci.yml)
 [![Pages](https://github.com/mamadiezad/gozaresh-reporting-system/actions/workflows/pages.yml/badge.svg)](https://mamadiezad.github.io/gozaresh-reporting-system/)
@@ -66,6 +66,10 @@ docker compose up --build
 
 Demo accounts (password `DemoPass!2024`): `alice` (requester), `bob` (finance manager),
 `carol` (inspector), `dave` (CEO), `erin` (auditor), `root` (admin).
+
+> **Note** — the [project site](https://mamadiezad.github.io/gozaresh-reporting-system/) is a
+> static page on GitHub Pages and has no backend attached, so the dashboard there only shows
+> setup instructions. Run the stack locally with the command above to use the real application.
 
 ### Why the engineering details matter
 

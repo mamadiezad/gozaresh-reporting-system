@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
+
   ...(isStaticExport
     ? {
         output: "export",

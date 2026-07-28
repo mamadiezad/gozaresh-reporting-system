@@ -98,12 +98,12 @@ export default function LandingPage() {
         </p>
 
         <div className="landing-cta">
-          <Link className="btn" href="/app">
-            ورود به داشبورد
-          </Link>
-          <a className="btn ghost" href={SITE.repo} target="_blank" rel="noopener noreferrer">
-            مشاهده سورس‌کد
+          <a className="btn" href={SITE.repo} target="_blank" rel="noopener noreferrer">
+            شروع کنید
           </a>
+          <Link className="btn ghost" href="/app">
+            پیش‌نمایش داشبورد
+          </Link>
           <Link className="btn ghost" href="/en" hrefLang="en" lang="en">
             English
           </Link>

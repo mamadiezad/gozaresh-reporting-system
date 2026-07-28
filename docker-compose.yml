@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gozaresh
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gozaresh_dev_password}
+      POSTGRES_DB: gozaresh
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gozaresh"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENV: dev
+      DATABASE_URL: postgresql+psycopg://gozaresh:${POSTGRES_PASSWORD:-gozaresh_dev_password}@db:5432/gozaresh
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production-please-use-a-long-random-value}
+      ALLOWED_ORIGINS: http://localhost:3000
+      FX_OFFLINE_MODE: "true"
+      INTEGRATIONS_SANDBOX: "true"
+      NOTIFICATIONS_DRY_RUN: "true"
+      KEYSTORE_DIR: /app/.keystore
+    ports:
+      - "8000:8000"
+    volumes:
+      - keystore:/app/.keystore
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_BASE: http://localhost:8000/api/v1
+      NEXT_PUBLIC_WS_BASE: ws://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
+  keystore:

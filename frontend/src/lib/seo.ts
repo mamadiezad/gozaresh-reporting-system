@@ -6,7 +6,7 @@
  */
 
 export const SITE = {
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://gozaresh-reporting-system.vercel.app").replace(/\/$/, ""),
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://mamadiezad.github.io/gozaresh-reporting-system").replace(/\/$/, ""),
   name: "گزارش | سامانه گزارش‌گیری سازمانی",
   shortName: "گزارش",
   nameEn: "Gozaresh — Enterprise Reporting System",
@@ -28,6 +28,29 @@ export const SITE = {
   authorHandle: "@llllxyz",
   repo: "https://github.com/mamadiezad/gozaresh-reporting-system",
   locale: "fa_IR",
+
+  keywordsEn: [
+    "enterprise reporting system",
+    "financial reporting software",
+    "open source reporting system",
+    "approval workflow engine",
+    "multi-stage approval workflow",
+    "digital signature workflow",
+    "tamper evident audit trail",
+    "hash chained audit log",
+    "decimal precision financial calculations",
+    "multi currency calculation engine",
+    "compound interest calculator api",
+    "amortisation schedule api",
+    "FastAPI financial application",
+    "Next.js RTL dashboard",
+    "SQLAlchemy decimal precision",
+    "RBAC permission system",
+    "fintech boilerplate",
+    "accounting integration API",
+    "Iranian tax authority integration",
+    "Moadian API integration",
+  ],
 
   keywords: [
     // Persian — what an Iranian buyer actually searches for
@@ -124,11 +147,21 @@ export function structuredData() {
       {
         "@type": "FAQPage",
         "@id": absoluteUrl("/#faq"),
+        inLanguage: "fa-IR",
         mainEntity: FAQ.map((item) => ({
           "@type": "Question",
           name: item.question,
           acceptedAnswer: { "@type": "Answer", text: item.answer },
         })),
+      },
+      {
+        "@type": "WebPage",
+        "@id": absoluteUrl("/en#webpage"),
+        url: absoluteUrl("/en"),
+        name: SITE.nameEn,
+        description: SITE.descriptionEn,
+        inLanguage: "en",
+        isPartOf: { "@id": absoluteUrl("/#website") },
       },
     ],
   };

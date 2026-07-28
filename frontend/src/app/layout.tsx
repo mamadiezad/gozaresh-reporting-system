@@ -21,7 +21,8 @@ export const metadata: Metadata = {
 
   alternates: {
     canonical: "/",
-    languages: { "fa-IR": "/", "x-default": "/" },
+    // hreflang tells Google these are locale variants of one page, not duplicates.
+    languages: { "fa-IR": "/", en: "/en", "x-default": "/" },
   },
 
   openGraph: {

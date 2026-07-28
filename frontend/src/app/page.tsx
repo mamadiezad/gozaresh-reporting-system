@@ -7,7 +7,10 @@ import { FAQ, SITE } from "@/lib/seo";
 export const metadata: Metadata = {
   title: SITE.title,
   description: SITE.description,
-  alternates: { canonical: "/" },
+  alternates: {
+    canonical: "/",
+    languages: { "fa-IR": "/", en: "/en", "x-default": "/" },
+  },
 };
 
 const FEATURES = [
@@ -101,6 +104,9 @@ export default function LandingPage() {
           <a className="btn ghost" href={SITE.repo} target="_blank" rel="noopener noreferrer">
             مشاهده سورس‌کد
           </a>
+          <Link className="btn ghost" href="/en" hrefLang="en" lang="en">
+            English
+          </Link>
         </div>
 
         <dl className="landing-stats">

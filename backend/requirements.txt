@@ -1,0 +1,21 @@
+# Versions below are the ones the test suite is verified against.
+# --- Core framework -------------------------------------------------------
+fastapi==0.140.8
+uvicorn[standard]==0.51.0
+pydantic==2.13.4
+pydantic-settings==2.14.2
+
+# --- Database -------------------------------------------------------------
+SQLAlchemy==2.0.51
+psycopg[binary]==3.2.10          # PostgreSQL driver (production)
+
+# --- Security -------------------------------------------------------------
+python-jose[cryptography]==3.5.0
+passlib==1.7.4
+argon2-cffi==25.1.0
+cryptography==49.0.0
+email-validator==2.3.0
+
+# --- HTTP / integrations --------------------------------------------------
+httpx==0.28.1
+websockets==16.1.1

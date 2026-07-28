@@ -1,0 +1,25 @@
+line-length = 120
+target-version = "py313"
+
+[lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
+ignore = [
+    "E501",   # line length is enforced by the formatter
+    "B008",   # FastAPI Depends() in defaults is idiomatic
+    "RUF001", # ambiguous unicode: Persian text is intentional
+    "RUF002",
+    "RUF003",
+    "N818",   # exception names without an Error suffix are fine here
+    "BLE001", # a few deliberate catch-alls keep the request path alive
+    "N802",   # `D()` is the established shorthand for the Decimal constructor
+    "SIM105", # explicit try/except/pass reads clearer than contextlib.suppress here
+]
+
+[lint.per-file-ignores]
+# `Session = sessionmaker(...)` is the documented SQLAlchemy naming convention.
+"tests/*" = ["S101", "SIM117", "N806"]
+"scripts/*" = ["E402"]
+"tests/conftest.py" = ["E402"]
+
+[lint.isort]
+known-first-party = ["app"]

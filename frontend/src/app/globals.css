@@ -637,3 +637,28 @@ label {
   .landing-hero { padding: 48px 0 32px; }
   .site-footer-inner { flex-direction: column; text-align: center; }
 }
+
+/* ==========================================================================
+   Code blocks (backend-required page)
+   ========================================================================== */
+.code-block {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  overflow-x: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.84rem;
+  line-height: 1.9;
+  margin: 0;
+  text-align: left;
+}
+
+.inline-code {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+}

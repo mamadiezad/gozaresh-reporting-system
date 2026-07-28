@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Gozaresh">
+  <rect width="64" height="64" rx="14" fill="#0f1420"/>
+  <rect x="12" y="30" width="8" height="20" rx="2" fill="#4f8cff"/>
+  <rect x="26" y="20" width="8" height="30" rx="2" fill="#34d399"/>
+  <rect x="40" y="12" width="8" height="38" rx="2" fill="#fbbf24"/>
+  <circle cx="48" cy="18" r="6" fill="#0f1420"/>
+  <path d="M45 18l2.2 2.2L51 16.4" stroke="#34d399" stroke-width="2.2" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next";
 
 import { SITE } from "@/lib/seo";
 
+// Required for `output: export` (GitHub Pages build).
+export const dynamic = "force-static";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: SITE.name,
